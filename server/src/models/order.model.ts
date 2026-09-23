@@ -2,6 +2,7 @@ import { db } from '../config/database.js';
 import {
     Order,
     OrderCreateDTO,
+    orderSchema,
     OrderUpdateDTO,
 } from '../schemas/order.schema.js';
 import { CountRow } from '../types/base.js';
@@ -28,7 +29,7 @@ export const OrderModel = {
             [limit, offset],
         );
 
-        return rows;
+        return orderSchema.array().parse(rows);
     },
 
     async count(): Promise<number> {
@@ -82,7 +83,7 @@ export const OrderModel = {
             ],
         );
 
-        return order;
+        return orderSchema.parse(order);
     },
 
     async findById(id: number): Promise<Order | null> {
@@ -105,7 +106,7 @@ export const OrderModel = {
 
         if (!order) return null;
 
-        return order;
+        return orderSchema.parse(order);
     },
 
     async delete(id: number): Promise<boolean> {
@@ -121,7 +122,7 @@ export const OrderModel = {
     },
 
     async update(id: number, data: OrderUpdateDTO): Promise<Order | null> {
-        const row = await db.oneOrNone<Order | null>(
+        const order = await db.oneOrNone<Order | null>(
             `WITH updated_order as (
                 UPDATE orders
                 SET
@@ -152,8 +153,8 @@ export const OrderModel = {
             [data.productName, data.price, data.orderDate, data.quantity, id],
         );
 
-        if (!row) return null;
+        if (!order) return null;
 
-        return row;
+        return orderSchema.parse(order);
     },
 };

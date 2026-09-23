@@ -7,7 +7,7 @@ export const customerSchema = z.object({
         .trim()
         .nonempty()
         .max(100, 'Name must be 100 characters or less'),
-    balance: z.number().nonnegative(),
+    balance: z.coerce.number().nonnegative(),
     birthDate: z.iso.date().nullable().optional(),
 });
 

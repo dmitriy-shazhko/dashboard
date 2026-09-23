@@ -5,7 +5,7 @@ export const orderSchema = z.object({
     customerId: z.number().nonnegative(),
     customerName: z.string().trim().nonempty(),
     productName: z.string().trim().nonempty(),
-    price: z.number().nonnegative(),
+    price: z.coerce.number().nonnegative(),
     orderDate: z.iso.date(),
     quantity: z.number().positive(),
 });

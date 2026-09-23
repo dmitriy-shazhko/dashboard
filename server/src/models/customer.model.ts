@@ -3,6 +3,7 @@ import {
     Customer,
     CustomerCreateDTO,
     CustomerOption,
+    customerSchema,
     CustomerUpdateDTO,
 } from '../schemas/customer.schema.js';
 import { CountRow } from '../types/base.js';
@@ -24,7 +25,7 @@ export const CustomerModel = {
             [limit, offset],
         );
 
-        return rows;
+        return customerSchema.array().parse(rows);
     },
 
     async count(): Promise<number> {
@@ -54,7 +55,7 @@ export const CustomerModel = {
 
         if (!row) return null;
 
-        return row;
+        return customerSchema.parse(row);
     },
 
     async create(data: CustomerCreateDTO): Promise<Customer> {
@@ -74,7 +75,7 @@ export const CustomerModel = {
             [data.name, 0, data.birthDate],
         );
 
-        return row;
+        return customerSchema.parse(row);
     },
 
     async update(
@@ -100,7 +101,7 @@ export const CustomerModel = {
 
         if (!row) return null;
 
-        return row;
+        return customerSchema.parse(row);
     },
 
     async delete(id: number): Promise<boolean> {

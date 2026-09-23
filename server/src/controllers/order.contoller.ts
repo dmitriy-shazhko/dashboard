@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { OrderModel } from '../models/order.model.js';
 import { getIdFromParams } from '../utils/workWithId.js';
-import { db } from '../config/database.js';
 import {
     createOrderSchema,
     updateOrderSchema,
