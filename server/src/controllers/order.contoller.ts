@@ -5,6 +5,7 @@ import {
     createOrderSchema,
     updateOrderSchema,
 } from '../schemas/order.schema.js';
+import { NotFoundError } from '../utils/errors.js';
 
 export const OrderController = {
     async getAll(req: Request, resp: Response, next: NextFunction) {
@@ -67,7 +68,7 @@ export const OrderController = {
     async create(req: Request, resp: Response, next: NextFunction) {
         try {
             const data = createOrderSchema.parse(req.body);
-            const order = await OrderModel.create(data);
+            const order = await OrderModel.create({ ...data });
 
             resp.status(201).json(order);
         } catch (error) {
@@ -78,9 +79,13 @@ export const OrderController = {
     async delete(req: Request, resp: Response, next: NextFunction) {
         try {
             const id = getIdFromParams(req);
-            const res = await OrderModel.delete(id);
+            const deleted = await OrderModel.delete(id);
 
-            resp.status(200).json(res);
+            if (!deleted) {
+                throw new NotFoundError(`Товар с id: ${id} не найден`);
+            }
+
+            resp.status(200).json({ id });
         } catch (error) {
             next(error);
         }

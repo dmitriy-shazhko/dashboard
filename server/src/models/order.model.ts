@@ -69,7 +69,7 @@ export const OrderModel = {
                 c.name AS "customerName",
                 o.product_name AS "productName",
                 o.price,
-                o.order_date::text AS orderDate,
+                o.order_date::text AS "orderDate",
                 o.quantity
             FROM new_order o
             JOIN customers c ON c.id = o.customer_id
@@ -126,11 +126,12 @@ export const OrderModel = {
             `WITH updated_order as (
                 UPDATE orders
                 SET
-                    product_name = $1, 
-                    price = $2, 
-                    order_date = $3, 
-                    quantity = $4
-                WHERE id = $5
+                    customer_id = $1,
+                    product_name = $2, 
+                    price = $3, 
+                    order_date = $4, 
+                    quantity = $5
+                WHERE id = $6
                 RETURNING
                     id,
                     customer_id,
@@ -145,12 +146,19 @@ export const OrderModel = {
                 c.name AS "customerName",
                 o.product_name AS "productName",
                 o.price,
-                o.order_date::text AS orderDate,
+                o.order_date::text AS "orderDate",
                 o.quantity
             FROM updated_order o
             JOIN customers c ON c.id = o.customer_id
             `,
-            [data.productName, data.price, data.orderDate, data.quantity, id],
+            [
+                data.customerId,
+                data.productName,
+                data.price,
+                data.orderDate,
+                data.quantity,
+                id,
+            ],
         );
 
         if (!order) return null;

@@ -5,6 +5,7 @@ import {
     customerUpdateSchema,
 } from '../schemas/customer.schema.js';
 import { getIdFromParams } from '../utils/workWithId.js';
+import { NotFoundError } from '../utils/errors.js';
 
 export const CustomerController = {
     async getAll(req: Request, resp: Response, next: NextFunction) {
@@ -79,9 +80,13 @@ export const CustomerController = {
     async delete(req: Request, resp: Response, next: NextFunction) {
         try {
             const id = getIdFromParams(req);
-            const res = await CustomerModel.delete(id);
+            const deleted = await CustomerModel.delete(id);
 
-            resp.status(200).json(res);
+            if (!deleted) {
+                throw new NotFoundError(`Покупатель с id: ${id} не найден`);
+            }
+
+            resp.status(200).json({ id });
         } catch (error) {
             next(error);
         }

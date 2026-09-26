@@ -7,7 +7,7 @@ export const orderSchema = z.object({
     productName: z.string().trim().nonempty(),
     price: z.coerce.number().nonnegative(),
     orderDate: z.iso.date(),
-    quantity: z.number().positive(),
+    quantity: z.coerce.number().positive(),
 });
 
 export const createOrderSchema = orderSchema.omit({
@@ -19,7 +19,6 @@ export const createOrderSchema = orderSchema.omit({
 export const updateOrderSchema = orderSchema.omit({
     id: true,
     customerName: true,
-    customerId: true,
 });
 
 export type Order = z.infer<typeof orderSchema>;
