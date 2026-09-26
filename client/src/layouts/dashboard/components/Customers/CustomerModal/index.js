@@ -7,10 +7,12 @@ import { useCreateCustomer } from "hooks/useCustomers";
 import CircularProgress from "@mui/material/CircularProgress";
 import Backdrop from "@mui/material/Backdrop";
 import CreateCustomerForm from "../CreateCustomerForm";
-import DeleteCustomer from "../DeleteCustomer";
 import { useDeleteCustomer } from "hooks/useCustomers";
 import { useUpdateCustomer } from "hooks/useCustomers";
 import UpdateCustomerForm from "../UpdateCustomerForm";
+import DeleteMessage from "components/DeleteMessage";
+import { useNotification } from "hooks/useNotifications";
+import { useDataRefresh } from "hooks/useDataRefresh";
 
 const style = {
   position: "absolute",
@@ -24,6 +26,12 @@ const style = {
   p: 4,
 };
 
+const emptyCustomerValues = {
+  name: "",
+  balance: "",
+  birthDate: "",
+};
+
 const CustomerModal = ({
   open,
   onClose,
@@ -32,13 +40,16 @@ const CustomerModal = ({
   selectedCustomer,
   onClearSelection,
 }) => {
+  const { notifyError, notifySuccess } = useNotification();
   const { mutate: createCustomer, isPending: isCreatingCustomer } = useCreateCustomer();
   const { mutate: deleteCustomer, isPending: isDeletingCustomer } = useDeleteCustomer();
   const { mutate: updateCustomer, isPending: isUpdatingCustomer } = useUpdateCustomer();
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, setError, formState } = useForm({
+    defaultValues: emptyCustomerValues,
+  });
+  const { trigger } = useDataRefresh();
 
   const handleClose = () => {
-    reset();
     onClose();
   };
 
@@ -52,6 +63,13 @@ const CustomerModal = ({
         onSuccess: () => {
           onOperationFinished();
           handleClose();
+          notifySuccess("Покупатель успешно добавлен");
+        },
+        onError: (error) => {
+          error.fieldErrors?.forEach(({ field, message }) => {
+            setError(field, { type: "server", message });
+          });
+          notifyError(error.message);
         },
       }
     );
@@ -63,8 +81,13 @@ const CustomerModal = ({
     deleteCustomer(selectedCustomer.id, {
       onSuccess: () => {
         onOperationFinished();
+        trigger("orders");
         handleClose();
         onClearSelection();
+        notifySuccess("Покупатель успешно удалён");
+      },
+      onError: (error) => {
+        notifyError(error.message);
       },
     });
   };
@@ -72,12 +95,19 @@ const CustomerModal = ({
   const onUpdateCustomer = (data) => {
     if (!selectedCustomer) return;
     updateCustomer(
-      { id: selectedCustomer.id, ...data },
+      { ...data, id: selectedCustomer.id, birthDate: data.birthDate || null },
       {
         onSuccess: () => {
           onOperationFinished();
           handleClose();
           onClearSelection();
+          notifySuccess("Данные покупателя успешно обновлены");
+        },
+        onError: (error) => {
+          error.fieldErrors?.forEach(({ field, message }) => {
+            setError(field, { type: "server", message });
+          });
+          notifyError(error.message);
         },
       }
     );
@@ -85,13 +115,25 @@ const CustomerModal = ({
 
   const showContent = () => {
     if (modalMode === "create") {
-      return <CreateCustomerForm onSubmit={handleSubmit(onCreateCustomer)} register={register} />;
+      return (
+        <CreateCustomerForm
+          errors={formState.errors}
+          onSubmit={handleSubmit(onCreateCustomer)}
+          register={register}
+        />
+      );
     }
     if (modalMode === "delete")
-      return <DeleteCustomer onAgree={onDeleteCustomer} onDisagree={handleClose} />;
+      return <DeleteMessage onAgree={onDeleteCustomer} onDisagree={handleClose} />;
 
     if (modalMode === "edit")
-      return <UpdateCustomerForm register={register} onSubmit={handleSubmit(onUpdateCustomer)} />;
+      return (
+        <UpdateCustomerForm
+          errors={formState.errors}
+          register={register}
+          onSubmit={handleSubmit(onUpdateCustomer)}
+        />
+      );
   };
 
   useEffect(() => {
@@ -104,7 +146,7 @@ const CustomerModal = ({
         birthDate: selectedCustomer.birthDate ?? "",
       });
     } else {
-      reset();
+      reset(emptyCustomerValues);
     }
   }, [open, modalMode, selectedCustomer, reset]);
 

@@ -23,6 +23,8 @@ import { MaterialUIControllerProvider } from "context";
 import { AgGridProvider } from "ag-grid-react";
 import { AllCommunityModule } from "ag-grid-community";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NotificationProvider } from "context/NotificationContext";
+import { DataRefreshProvider } from "context/DataRefreshContext";
 
 const container = document.getElementById("app");
 const root = createRoot(container);
@@ -32,11 +34,15 @@ const queryClient = new QueryClient();
 root.render(
   <BrowserRouter>
     <MaterialUIControllerProvider>
-      <AgGridProvider modules={agModules}>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
-      </AgGridProvider>
+      <NotificationProvider>
+        <AgGridProvider modules={agModules}>
+          <QueryClientProvider client={queryClient}>
+            <DataRefreshProvider>
+              <App />
+            </DataRefreshProvider>
+          </QueryClientProvider>
+        </AgGridProvider>
+      </NotificationProvider>
     </MaterialUIControllerProvider>
   </BrowserRouter>
 );

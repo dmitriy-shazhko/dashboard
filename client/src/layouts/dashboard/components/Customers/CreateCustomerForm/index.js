@@ -3,7 +3,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import PropTypes from "prop-types";
 
-const UpdateCustomerForm = ({ register, onSubmit }) => {
+const CreateCustomerForm = ({ onSubmit, register, errors }) => {
   return (
     <form onSubmit={onSubmit}>
       <Stack spacing={3}>
@@ -13,6 +13,8 @@ const UpdateCustomerForm = ({ register, onSubmit }) => {
           variant="outlined"
           {...register("name")}
           required
+          error={!!errors?.name}
+          helperText={errors?.name?.message}
         />
         <TextField
           id="customer-birthdate"
@@ -21,26 +23,21 @@ const UpdateCustomerForm = ({ register, onSubmit }) => {
           type="date"
           InputLabelProps={{ shrink: true }}
           {...register("birthDate")}
-        />
-        <TextField
-          id="customer-balance"
-          label="Баланс"
-          variant="outlined"
-          type="number"
-          InputLabelProps={{ shrink: true }}
-          {...register("balance")}
+          error={!!errors?.birthDate}
+          helperText={errors?.birthDate?.message}
         />
         <Button type="submit" variant="contained" color="success">
-          Редактировать
+          Добавить
         </Button>
       </Stack>
     </form>
   );
 };
 
-UpdateCustomerForm.propTypes = {
-  register: PropTypes.func.isRequired,
+CreateCustomerForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
+  register: PropTypes.func.isRequired,
+  errors: PropTypes.object,
 };
 
-export default UpdateCustomerForm;
+export default CreateCustomerForm;

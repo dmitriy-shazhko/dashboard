@@ -4,29 +4,40 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import CustomerModal from "../CustomerModal";
 import { ModuleRegistry, InfiniteRowModelModule } from "ag-grid-community";
 import { getCustomers } from "api/customers";
+import { useNotification } from "hooks/useNotifications";
+import { getErrorMessage } from "utils/getErrorMessage";
 
 ModuleRegistry.registerModules([InfiniteRowModelModule]);
 
-export const createCustomersDatasource = (setisLodaing) => ({
+export const createCustomersDatasource = (notifyError, gridApiRef) => ({
   getRows: async (params) => {
     const { startRow, endRow } = params;
 
     const limit = endRow - startRow;
     const offset = startRow;
 
+    gridApiRef.current?.setGridOption("loading", true);
+
     try {
-      setisLodaing(true);
       const result = await getCustomers({
         limit,
         offset,
       });
 
       params.successCallback(result.data, result.total);
-      setisLodaing(false);
+      gridApiRef.current?.setGridOption("loading", false);
+
+      if (result.total === 0) {
+        gridApiRef.current?.showNoRowsOverlay();
+      } else {
+        gridApiRef.current?.hideOverlay();
+      }
     } catch (error) {
       console.error(error);
-      params.failCallback();
-      setisLodaing(false);
+      notifyError(getErrorMessage(error));
+      params.successCallback([], 0);
+      gridApiRef.current?.setGridOption("loading", false);
+      gridApiRef.current?.showNoRowsOverlay();
     }
   },
 });
@@ -35,7 +46,7 @@ const CustomersTable = () => {
   const gridApiRef = useRef(null);
   const [selectedCustomer, setSelectedCustomer] = useState();
   const [modalMode, setModalMode] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { notifyError } = useNotification();
 
   const [colDefs] = useState([
     { headerName: "Имя", field: "name", flex: 1 },
@@ -53,7 +64,7 @@ const CustomersTable = () => {
     },
   ]);
 
-  const datasource = useMemo(() => createCustomersDatasource(setIsLoading), []);
+  const datasource = useMemo(() => createCustomersDatasource(notifyError, gridApiRef), []);
   const onGridReady = useCallback(
     (params) => {
       gridApiRef.current = params.api;
@@ -129,7 +140,7 @@ const CustomersTable = () => {
           onGridReady={onGridReady}
           rowSelection="single"
           onSelectionChanged={onSelectionChanged}
-          loading={isLoading}
+          overlayNoRowsTemplate="<span>Нет данных для отображения</span>"
         />
       </div>
       <CustomerModal

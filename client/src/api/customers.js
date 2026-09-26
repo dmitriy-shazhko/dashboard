@@ -1,3 +1,5 @@
+import { ApiError } from "utils/ApiError";
+
 const BASE_API = process.env.REACT_APP_BASE_API;
 const URL = `${BASE_API}/api/customers`;
 
@@ -6,7 +8,18 @@ export const getCustomers = async ({ limit, offset }) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message);
+    throw new ApiError(data.message, data.errors);
+  }
+
+  return data;
+};
+
+export const getCustomerOptions = async () => {
+  const response = await fetch(`${URL}/options`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new ApiError(data.message, data.errors);
   }
 
   return data;
@@ -23,7 +36,7 @@ export const createCustomer = async ({ name, birthDate }) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message);
+    throw new ApiError(data.message, data.errors);
   }
 
   return data;
@@ -39,14 +52,13 @@ export const deleteCustomer = async (id) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message);
+    throw new ApiError(data.message, data.errors);
   }
 
   return data;
 };
 
 export const updateCustomer = async ({ id, ...body }) => {
-  console.log(id, body);
   const response = await fetch(`${URL}/${id}`, {
     method: "PATCH",
     headers: {
@@ -57,7 +69,7 @@ export const updateCustomer = async ({ id, ...body }) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message);
+    throw new ApiError(data.message, data.errors);
   }
 
   return data;

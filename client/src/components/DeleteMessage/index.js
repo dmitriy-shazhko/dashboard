@@ -3,7 +3,7 @@ import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import PropTypes from "prop-types";
 
-const DeleteCustomer = ({ onAgree, onDisagree }) => {
+const DeleteMessage = ({ onAgree, onDisagree }) => {
   return (
     <div>
       <Stack spacing={3}>
@@ -17,9 +17,9 @@ const DeleteCustomer = ({ onAgree, onDisagree }) => {
   );
 };
 
-DeleteCustomer.propTypes = {
+DeleteMessage.propTypes = {
   onAgree: PropTypes.func.isRequired,
   onDisagree: PropTypes.func.isRequired,
 };
 
-export default DeleteCustomer;
+export default DeleteMessage;
